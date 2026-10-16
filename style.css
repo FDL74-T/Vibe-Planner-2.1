@@ -48,7 +48,6 @@ body {
     margin: 0 auto;
 }
 
-/* NAVBAR */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -718,14 +717,10 @@ body {
 }
 
 
-/* =====================================================
-   INTERAKTIF & HIDUP — tambahan v2
-   ===================================================== */
 html { scroll-behavior: smooth; }
 body { transition: background-color .4s, color .4s; }
 button { font-family: inherit; position: relative; overflow: hidden; }
 
-/* latar bergerak */
 .ambient { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .ambient i { position: absolute; width: 46vmax; height: 46vmax; border-radius: 50%; filter: blur(70px); opacity: .35; animation: drift 22s ease-in-out infinite alternate; }
 .ambient i:nth-child(1) { background: #5eead4; top: -18vmax; left: -12vmax; }
@@ -733,11 +728,9 @@ button { font-family: inherit; position: relative; overflow: hidden; }
 .ambient i:nth-child(3) { background: #fde68a; top: 35%; left: 45%; width: 28vmax; height: 28vmax; opacity: .22; animation-delay: -13s; }
 @keyframes drift { to { transform: translate(7vmax, 5vmax) scale(1.15) rotate(25deg); } }
 
-/* animasi masuk */
 .reveal { animation: rise .7s cubic-bezier(.2, .8, .2, 1) backwards; animation-delay: calc(var(--i, 0) * 90ms); }
 @keyframes rise { from { opacity: 0; transform: translateY(24px) scale(.98); } to { opacity: 1; transform: none; } }
 
-/* spotlight kursor */
 .card-panel, .stat-card { isolation: isolate; }
 .card-panel::before, .stat-card::before {
     content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .3s;
@@ -754,12 +747,10 @@ button { font-family: inherit; position: relative; overflow: hidden; }
 .progress-bar-fill { background-size: 200% 100%; background-image: linear-gradient(90deg, #10b981, #34d399, #10b981); animation: shimmer 2.4s linear infinite; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 
-/* ripple */
 .ripple { position: absolute; width: 14px; height: 14px; margin: -7px; border-radius: 50%; background: rgba(255, 255, 255, .55); pointer-events: none; animation: ripple .6s ease-out forwards; }
 .stat-card .ripple, .btn-toggle-done .ripple, .tab-pill .ripple { background: rgba(13, 148, 136, .25); }
 @keyframes ripple { to { transform: scale(26); opacity: 0; } }
 
-/* navbar */
 .brand-badge { animation: float 4s ease-in-out infinite; }
 .brand-dot { animation: glow 2s ease-in-out infinite; }
 @keyframes float { 50% { transform: translateY(-3px) rotate(-4deg); } }
@@ -772,7 +763,6 @@ button { font-family: inherit; position: relative; overflow: hidden; }
 .theme-toggle:hover { transform: rotate(25deg) scale(1.1); background: #e6fffa; }
 .clock-text { font-variant-numeric: tabular-nums; }
 
-/* form */
 .char-count { float: right; font-weight: 500; font-size: 11px; color: var(--text-muted); }
 .prio-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; background: #f1f5f9; padding: 4px; border-radius: 12px; }
 .prio-seg button { border: none; background: transparent; padding: 8px 4px; font-size: 12px; font-weight: 600; border-radius: 9px; cursor: pointer; color: var(--text-secondary); transition: all .2s; }
@@ -783,7 +773,6 @@ button { font-family: inherit; position: relative; overflow: hidden; }
 .modern-form.shake { animation: shake .45s; }
 @keyframes shake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
 
-/* kalender */
 .cal-nav-btn:active { transform: scale(.88); }
 .calendar-table tbody.slide-l { animation: slideL .35s ease-out; }
 .calendar-table tbody.slide-r { animation: slideR .35s ease-out; }
@@ -816,7 +805,6 @@ button { font-family: inherit; position: relative; overflow: hidden; }
 .dot { width: 9px; height: 9px; border-radius: 50%; }
 .dot.pr-High { background: #ef4444; } .dot.pr-Medium { background: #f59e0b; } .dot.pr-Low { background: #22c55e; }
 
-/* tabel */
 .tab-pill:hover:not(.active) { background: rgba(255, 255, 255, .6); color: var(--text-primary); }
 .sortable { cursor: pointer; user-select: none; transition: background .15s; }
 .sortable:hover { background: #cfe8e5; }
@@ -849,7 +837,6 @@ mark { background: #fde68a; color: inherit; border-radius: 3px; padding: 0 2px; 
 .search-input-wrap input { transition: all .25s; }
 .search-input-wrap input:focus { transform: scale(1.01); }
 
-/* toast bertumpuk */
 .toast-stack { position: fixed; bottom: 22px; right: 22px; display: flex; flex-direction: column; gap: 8px; z-index: 9999; max-width: calc(100vw - 32px); }
 .toast { display: flex; align-items: center; gap: 14px; background: #0f172a; color: #fff; padding: 12px 18px; border-radius: 12px; font-size: 13px; font-weight: 500; box-shadow: var(--shadow-lg); animation: toastIn .3s cubic-bezier(.2, .8, .2, 1); }
 .toast.out { animation: toastOut .25s forwards; }
@@ -860,7 +847,6 @@ mark { background: #fde68a; color: inherit; border-radius: 3px; padding: 0 2px; 
 .kbd-hint { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin: 28px 0 8px; font-size: 12px; color: var(--text-muted); }
 kbd { background: var(--card-surface); border: 1px solid var(--border-color); border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; margin-right: 4px; font: 600 11px inherit; font-family: inherit; }
 
-/* mode gelap */
 [data-theme="dark"] {
     --bg-main: #0b1220; --card-surface: #111a2b; --border-color: #22304a;
     --text-primary: #e6edf7; --text-secondary: #b0bccf; --text-muted: #8a9ab2; --brand-dark: #5eead4;
@@ -901,9 +887,6 @@ kbd { background: var(--card-surface); border: 1px solid var(--border-color); bo
 @media (max-width: 768px) { .toast-stack { left: 16px; right: 16px; bottom: 14px; } .kbd-hint { display: none; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 
-/* =====================================================
-   v3 — grafik 7 hari, mode fokus, drag & drop
-   ===================================================== */
 .insight-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px; margin-bottom: 24px; }
 .week-chart { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; height: 138px; }
 .wk { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 4px; background: none; border: none; padding: 4px 0; cursor: pointer; overflow: visible; border-radius: 10px; transition: background .2s; }
