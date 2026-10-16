@@ -1,0 +1,32 @@
+# Byte-compiled / cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Direktori Vercel (jika menggunakan Vercel CLI)
+.vercel/
+
+# Lingkungan virtual (Virtual Environment)
+venv/
+.venv/
+env/
+ENV/
+
+# Berkas editor & IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Berkas sistem operasi
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Berkas konfigurasi lingkungan lokal & log
+.env
+.env.local
+*.log
+
+# Data lokal aplikasi
+activities_data.json

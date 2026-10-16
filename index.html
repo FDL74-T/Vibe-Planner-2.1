@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibePlanner - Modern Activity & Calendar Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="ambient" aria-hidden="true"><i></i><i></i><i></i></div>
+    <canvas id="confettiCanvas"></canvas>
+
+    <div class="app-layout">
+        <header class="navbar reveal" style="--i:0">
+            <div class="brand-group">
+                <div class="brand-badge"><span class="brand-dot"></span></div>
+                <div>
+                    <h1 class="brand-name">VibePlanner</h1>
+                    <p class="brand-tagline" id="greetingText">Memuat sapaan...</p>
+                </div>
+            </div>
+            <div class="navbar-actions">
+                <div class="autosave-indicator" id="autosaveBadge" data-state="ok">
+                    <span class="pulse-dot"></span>
+                    <span class="autosave-text">Tersimpan Otomatis</span>
+                </div>
+                <button class="theme-toggle" id="themeToggle" title="Ganti tema (D)" aria-label="Ganti tema">🌙</button>
+                <div class="clock-chip">
+                    <span id="liveClock" class="clock-text">00:00:00</span>
+                    <span id="currentDateStr" class="date-text">Memuat...</span>
+                </div>
+            </div>
+        </header>
+
+        <section class="stat-container">
+            <div class="stat-card teal active-filter reveal" style="--i:1" data-filter="all" title="Tampilkan semua kegiatan">
+                <div class="stat-header"><span class="stat-badge">Semua</span><span class="stat-icon">📋</span></div>
+                <div class="stat-number" id="statTotal">0</div>
+                <div class="stat-meta">Total kegiatan terencana</div>
+            </div>
+            <div class="stat-card green reveal" style="--i:2" data-filter="completed" title="Filter kegiatan yang selesai">
+                <div class="stat-header"><span class="stat-badge">Progres</span><span class="stat-icon">🎯</span></div>
+                <div class="stat-number" id="statCompleted">0</div>
+                <div class="stat-meta" id="statProgressLabel">Selesai (0%)</div>
+                <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progressBar"></div></div>
+            </div>
+            <div class="stat-card amber reveal" style="--i:3" data-filter="pending" title="Filter kegiatan yang belum selesai">
+                <div class="stat-header"><span class="stat-badge">Tertunda</span><span class="stat-icon">⏳</span></div>
+                <div class="stat-number" id="statPending">0</div>
+                <div class="stat-meta">Sedang berjalan / menunggu</div>
+            </div>
+        </section>
+
+        <div class="main-grid">
+            <section class="card-panel form-panel reveal" style="--i:4">
+                <div class="panel-header">
+                    <h2 class="panel-title">Tambah Kegiatan Baru</h2>
+                    <span class="panel-pill">Formulir Rencana</span>
+                </div>
+                <form id="addActivityForm" class="modern-form" novalidate>
+                    <div class="form-field">
+                        <label for="title">Nama Kegiatan <span class="required">*</span>
+                            <span class="char-count" id="charCount">0/80</span></label>
+                        <input type="text" id="title" maxlength="80" placeholder="Misal: Review Materi Python & Array 2D" autocomplete="off">
+                    </div>
+                    <div class="form-field">
+                        <label for="date">Tanggal Pelaksanaan <span class="required">*</span></label>
+                        <div class="date-presets">
+                            <button type="button" class="preset-chip" data-preset="0">Hari Ini</button>
+                            <button type="button" class="preset-chip" data-preset="1">Besok</button>
+                            <button type="button" class="preset-chip" data-preset="2">Lusa</button>
+                            <button type="button" class="preset-chip" data-preset="weekend">Akhir Pekan</button>
+                        </div>
+                        <input type="date" id="date" required>
+                    </div>
+                    <div class="form-field">
+                        <label>Tingkat Prioritas</label>
+                        <input type="hidden" id="priority" value="Medium">
+                        <div class="prio-seg" id="prioSeg">
+                            <button type="button" data-p="Low">🟢 Low</button>
+                            <button type="button" data-p="Medium" class="on">🟡 Medium</button>
+                            <button type="button" data-p="High">🔴 High</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit"><span>+ Simpan Rencana</span></button>
+                </form>
+            </section>
+
+            <section class="card-panel calendar-panel reveal" style="--i:5">
+                <div class="panel-header">
+                    <div class="cal-nav-group">
+                        <button class="cal-nav-btn" data-month="-1" title="Bulan sebelumnya (←)">◀</button>
+                        <h2 class="panel-title" id="calendarTitle">Kalender</h2>
+                        <button class="cal-nav-btn" data-month="1" title="Bulan berikutnya (→)">▶</button>
+                    </div>
+                    <button class="btn-today-pill" id="btnToday" title="Kembali ke hari ini (T)">Hari Ini</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="calendar-table">
+                        <thead><tr><th>Sen</th><th>Sel</th><th>Rab</th><th>Kam</th><th>Jum</th><th>Sab</th><th>Min</th></tr></thead>
+                        <tbody id="calendarBody"></tbody>
+                    </table>
+                </div>
+                <div class="day-panel" id="dayPanel"></div>
+            </section>
+        </div>
+
+        <section class="card-panel list-panel reveal" style="--i:6">
+            <div class="list-panel-header">
+                <div>
+                    <h2 class="panel-title" style="margin:0">Daftar Rencana Kegiatan</h2>
+                    <p class="panel-subtitle">Klik 2x pada judul untuk mengedit • klik judul kolom untuk mengurutkan</p>
+                </div>
+                <div class="tab-pill-group">
+                    <button class="tab-pill active" data-filter="all">Semua (<span id="countAll">0</span>)</button>
+                    <button class="tab-pill" data-filter="pending">Tertunda (<span id="countPending">0</span>)</button>
+                    <button class="tab-pill" data-filter="completed">Selesai (<span id="countCompleted">0</span>)</button>
+                </div>
+            </div>
+            <div class="table-toolbar">
+                <div class="search-input-wrap">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Cari kegiatan... (tekan / )">
+                    <button id="clearSearchBtn" class="clear-search" style="display:none" aria-label="Hapus pencarian">✕</button>
+                </div>
+                <div class="filter-dropdown-wrap">
+                    <select id="priorityFilter">
+                        <option value="all">Semua Prioritas</option>
+                        <option value="High">🔴 Hanya Prioritas Tinggi</option>
+                        <option value="Medium">🟡 Hanya Prioritas Sedang</option>
+                        <option value="Low">🟢 Hanya Prioritas Rendah</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-container">
+                <table class="activity-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-sort="title" style="width:42%">Nama Kegiatan <i></i></th>
+                            <th class="sortable" data-sort="date" style="width:19%">Tanggal <i></i></th>
+                            <th class="sortable" data-sort="priority" style="width:14%">Prioritas <i></i></th>
+                            <th class="sortable" data-sort="completed" style="width:12%">Status <i></i></th>
+                            <th style="width:13%;text-align:right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="activityTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer class="kbd-hint">
+            <span><kbd>N</kbd> kegiatan baru</span><span><kbd>/</kbd> cari</span>
+            <span><kbd>←</kbd><kbd>→</kbd> ganti bulan</span><span><kbd>T</kbd> hari ini</span><span><kbd>D</kbd> tema</span>
+        </footer>
+    </div>
+
+    <div id="toastStack" class="toast-stack" aria-live="polite"></div>
+    <script src="script.js"></script>
+</body>
+</html>
