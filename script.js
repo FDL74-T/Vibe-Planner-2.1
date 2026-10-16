@@ -1,4 +1,3 @@
-/* ===== VibePlanner — state & util ===== */
 const KEY = 'vibe_planner_activities_db', THEME = 'vibe_planner_theme';
 const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const HARI = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
@@ -26,7 +25,6 @@ const metrics = () => {
     return { total: t, completed: c, pending: t - c, progress: t ? Math.round(c / t * 1000) / 10 : 0 };
 };
 
-/* ===== Penyimpanan: localStorage + sinkron ke backend ===== */
 let syncTimer;
 function save() {
     localStorage.setItem(KEY, JSON.stringify(S.acts));
@@ -62,7 +60,6 @@ async function load() {
     sync();
 }
 
-/* ===== Jam, sapaan & tanggal ===== */
 function tick() {
     const n = new Date(), h = n.getHours();
     $('#liveClock').textContent = `${pad(h)}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
@@ -74,7 +71,6 @@ function tick() {
         p ? `${p} kegiatan menantimu hari ini 🚀` : 'Hari ini bebas jadwal, santai dulu ✨');
 }
 
-/* ===== Render ===== */
 function renderAll() { renderStats(); renderCal(); renderDay(); renderTable(); renderInsights(); tick(); }
 
 function renderStats() {
@@ -186,7 +182,6 @@ function renderTable() {
     S.fx = null;
 }
 
-/* ===== Aksi ===== */
 function toggle(id, ev) {
     const a = S.acts.find(x => x.id === id); if (!a) return;
     a.completed = !a.completed;
@@ -268,7 +263,6 @@ function preset(v) {
     else $('#date').value = addDays(+v);
 }
 
-/* ===== Efek visual ===== */
 const cv = $('#confettiCanvas'), cx = cv.getContext('2d');
 let P = [], running = false;
 const sizeCv = () => { cv.width = innerWidth; cv.height = innerHeight; };
@@ -303,7 +297,6 @@ function setTheme(dark) {
     localStorage.setItem(THEME, dark ? 'dark' : 'light');
 }
 
-/* ===== Inisialisasi & event ===== */
 document.addEventListener('DOMContentLoaded', async () => {
     const saved = localStorage.getItem(THEME);
     setTheme(saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
@@ -353,7 +346,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('change', e => { if (e.target.matches('.day-item input')) toggle(+e.target.dataset.id, e); });
     document.addEventListener('dblclick', e => { const td = e.target.closest('.t-title'); if (td) editTitle(td); });
 
-    // spotlight kursor & kemiringan 3D
     $$('.stat-card, .card-panel').forEach(el => {
         el.addEventListener('pointermove', e => {
             const r = el.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
@@ -364,7 +356,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         el.addEventListener('pointerleave', () => el.style.transform = '');
     });
 
-    // pintasan keyboard
     document.addEventListener('keydown', e => {
         const el = document.activeElement;
         if (el.matches('input, select, textarea') || e.ctrlKey || e.metaKey || e.altKey) {
@@ -382,7 +373,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 
-/* ===== v3: grafik 7 hari, streak, mode fokus, drag & drop ===== */
 const FKEY = 'vp_focus_', DOC_TITLE = document.title, CIRC = 2 * Math.PI * 52;
 const F = { len: 1500, left: 1500, on: false, n: +localStorage.getItem(FKEY + today()) || 0 };
 let ft;
@@ -463,7 +453,6 @@ document.addEventListener('DOMContentLoaded', () => {
         $('#dayPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     };
 
-    // seret baris kegiatan ke tanggal kalender
     const clearDrop = () => $$('.drop-hover').forEach(x => x.classList.remove('drop-hover'));
     document.addEventListener('dragstart', e => {
         const tr = e.target.closest && e.target.closest('tr[draggable="true"]'); if (!tr) return;
