@@ -1,4 +1,3 @@
-/* ===== VibePlanner — state & util ===== */
 const KEY = 'vibe_planner_activities_db', THEME = 'vibe_planner_theme';
 const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 const HARI = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
@@ -26,7 +25,6 @@ const metrics = () => {
     return { total: t, completed: c, pending: t - c, progress: t ? Math.round(c / t * 1000) / 10 : 0 };
 };
 
-/* ===== Penyimpanan: localStorage + sinkron ke backend ===== */
 let syncTimer;
 function save() {
     localStorage.setItem(KEY, JSON.stringify(S.acts));
@@ -62,7 +60,6 @@ async function load() {
     sync();
 }
 
-/* ===== Jam, sapaan & tanggal ===== */
 function tick() {
     const n = new Date(), h = n.getHours();
     $('#liveClock').textContent = `${pad(h)}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
@@ -74,8 +71,7 @@ function tick() {
         p ? `${p} kegiatan menantimu hari ini 🚀` : 'Hari ini bebas jadwal, santai dulu ✨');
 }
 
-/* ===== Render ===== */
-function renderAll() { renderStats(); renderCal(); renderDay(); renderTable(); tick(); }
+function renderAll() { renderStats(); renderCal(); renderDay(); renderTable(); renderInsights(); tick(); }
 
 function renderStats() {
     const m = metrics();
@@ -175,7 +171,7 @@ function renderTable() {
         tb.innerHTML = `<tr><td colspan="5" class="empty-row"><div class="empty-emoji">🌱</div>${S.acts.length ? 'Tidak ada kegiatan yang cocok dengan pencarian atau filter.' : 'Belum ada rencana. Mulai dari formulir di atas!'}</td></tr>`;
         return;
     }
-    tb.innerHTML = L.map(a => `<tr data-id="${a.id}" class="${S.fx && S.fx.id === a.id ? S.fx.cls : ''}">
+    tb.innerHTML = L.map(a => `<tr draggable="true" data-id="${a.id}" class="${S.fx && S.fx.id === a.id ? S.fx.cls : ''}">
         <td class="t-title ${a.completed ? 't-done' : ''}" title="Klik 2x untuk mengedit">${hl(a.title)} ${relChip(a)}</td>
         <td class="t-date">📅 ${fmt(a.date)}</td>
         <td><span class="priority-pill pr-${a.priority}">${{ High: '🔴 High', Medium: '🟡 Medium', Low: '🟢 Low' }[a.priority] || esc(a.priority)}</span></td>
@@ -186,7 +182,6 @@ function renderTable() {
     S.fx = null;
 }
 
-/* ===== Aksi ===== */
 function toggle(id, ev) {
     const a = S.acts.find(x => x.id === id); if (!a) return;
     a.completed = !a.completed;
@@ -229,6 +224,7 @@ function addActivity(e) {
 function editTitle(td) {
     const id = +td.parentElement.dataset.id, a = S.acts.find(x => x.id === id);
     if (!a || $('input', td)) return;
+    td.parentElement.draggable = false;
     td.innerHTML = `<input class="inline-edit" maxlength="80" value="${esc(a.title)}">`;
     const inp = $('input', td); inp.focus(); inp.select();
     let done = false;
@@ -267,7 +263,6 @@ function preset(v) {
     else $('#date').value = addDays(+v);
 }
 
-/* ===== Efek visual ===== */
 const cv = $('#confettiCanvas'), cx = cv.getContext('2d');
 let P = [], running = false;
 const sizeCv = () => { cv.width = innerWidth; cv.height = innerHeight; };
@@ -302,7 +297,6 @@ function setTheme(dark) {
     localStorage.setItem(THEME, dark ? 'dark' : 'light');
 }
 
-/* ===== Inisialisasi & event ===== */
 document.addEventListener('DOMContentLoaded', async () => {
     const saved = localStorage.getItem(THEME);
     setTheme(saved ? saved === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches);
@@ -352,7 +346,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('change', e => { if (e.target.matches('.day-item input')) toggle(+e.target.dataset.id, e); });
     document.addEventListener('dblclick', e => { const td = e.target.closest('.t-title'); if (td) editTitle(td); });
 
-    // spotlight kursor & kemiringan 3D
     $$('.stat-card, .card-panel').forEach(el => {
         el.addEventListener('pointermove', e => {
             const r = el.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
@@ -363,7 +356,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         el.addEventListener('pointerleave', () => el.style.transform = '');
     });
 
-    // pintasan keyboard
     document.addEventListener('keydown', e => {
         const el = document.activeElement;
         if (el.matches('input, select, textarea') || e.ctrlKey || e.metaKey || e.altKey) {
@@ -377,5 +369,110 @@ document.addEventListener('DOMContentLoaded', async () => {
         else if (k === 'd') $('#themeToggle').click();
         else if (e.key === 'ArrowLeft') changeMonth(-1);
         else if (e.key === 'ArrowRight') changeMonth(1);
+    });
+});
+
+
+const FKEY = 'vp_focus_', DOC_TITLE = document.title, CIRC = 2 * Math.PI * 52;
+const F = { len: 1500, left: 1500, on: false, n: +localStorage.getItem(FKEY + today()) || 0 };
+let ft;
+
+function renderInsights() {
+    const wk = [];
+    for (let i = 6; i >= 0; i--) {
+        const k = addDays(-i), L = S.acts.filter(a => a.date === k);
+        wk.push({ k, t: L.length, d: L.filter(a => a.completed).length });
+    }
+    const mx = Math.max(1, ...wk.map(w => w.t));
+    $('#weekChart').innerHTML = wk.map((w, i) => `<button class="wk${w.k === today() ? ' now' : ''}" data-wk="${w.k}" title="${fmt(w.k)}: ${w.d}/${w.t} selesai">
+        <span class="wk-n">${w.t || ''}</span>
+        <span class="wk-bar" style="height:${w.t ? 10 + w.t / mx * 74 : 4}px;--d:${i}"><i style="height:${w.t ? w.d / w.t * 100 : 0}%"></i></span>
+        <span class="wk-l">${HARI[parse(w.k).getDay()]}</span></button>`).join('');
+    let st = 0;
+    for (let i = 0; i < 365; i++) {
+        if (S.acts.some(a => a.date === addDays(-i) && a.completed)) st++; else if (i > 0) break;
+    }
+    $('#streakPill').textContent = `🔥 ${st} hari beruntun`;
+    const sel = $('#focusTask'), cur = sel.value, P = S.acts.filter(a => !a.completed);
+    sel.innerHTML = '<option value="">— Fokus bebas —</option>' + P.map(a => `<option value="${a.id}">${esc(a.title)}</option>`).join('');
+    sel.value = P.some(a => String(a.id) === cur) ? cur : '';
+    $('#focusCount').textContent = `${F.n} sesi hari ini`;
+}
+function focusDraw() {
+    const m = pad(Math.floor(F.left / 60)), s = pad(F.left % 60);
+    $('#focusTime').textContent = `${m}:${s}`;
+    $('#ringFg').style.strokeDashoffset = CIRC * (1 - F.left / F.len);
+    document.title = F.on ? `${m}:${s} • Fokus — VibePlanner` : DOC_TITLE;
+}
+function focusStop(label) {
+    clearInterval(ft); F.on = false;
+    document.body.classList.remove('focusing');
+    $('#focusStart').textContent = label;
+}
+function beep() {
+    try {
+        const c = new AudioContext(), o = c.createOscillator(), g = c.createGain();
+        o.connect(g); g.connect(c.destination); o.frequency.value = 880;
+        g.gain.setValueAtTime(.15, c.currentTime); g.gain.exponentialRampToValueAtTime(.001, c.currentTime + .6);
+        o.start(); o.stop(c.currentTime + .6);
+    } catch {}
+}
+function focusDone() {
+    focusStop('▶ Mulai'); F.n++; F.left = F.len;
+    localStorage.setItem(FKEY + today(), F.n);
+    beep(); confetti(innerWidth / 2, innerHeight / 2, 120);
+    const id = +$('#focusTask').value;
+    toast('⏰ Sesi fokus selesai! Istirahat sebentar ☕', id ? { action: 'Tandai selesai', ms: 8000, fn: () => {
+        const a = S.acts.find(x => x.id === id); if (a && !a.completed) toggle(id);
+    } } : { ms: 5000 });
+    renderInsights();
+}
+function focusToggle() {
+    if (F.on) { focusStop('▶ Lanjut'); }
+    else {
+        F.on = true; $('#focusStart').textContent = '⏸ Jeda'; document.body.classList.add('focusing');
+        ft = setInterval(() => { if (--F.left <= 0) focusDone(); focusDraw(); }, 1000);
+    }
+    focusDraw();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    $('#ringFg').style.strokeDasharray = CIRC;
+    focusDraw();
+    $('#focusStart').onclick = focusToggle;
+    $('#focusReset').onclick = () => { focusStop('▶ Mulai'); F.left = F.len; focusDraw(); };
+    $('#focusLen').onclick = e => {
+        const b = e.target.closest('button'); if (!b || F.on) return;
+        $$('#focusLen button').forEach(x => x.classList.toggle('on', x === b));
+        F.len = F.left = +b.dataset.m * 60; focusDraw();
+    };
+    $('#weekChart').onclick = e => {
+        const b = e.target.closest('[data-wk]'); if (!b) return;
+        const k = b.dataset.wk; [S.year, S.month] = k.split('-').slice(0, 2).map(Number);
+        renderCal(); selectDate(k, false);
+        $('#dayPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    };
+
+    const clearDrop = () => $$('.drop-hover').forEach(x => x.classList.remove('drop-hover'));
+    document.addEventListener('dragstart', e => {
+        const tr = e.target.closest && e.target.closest('tr[draggable="true"]'); if (!tr) return;
+        e.dataTransfer.setData('text/plain', tr.dataset.id); e.dataTransfer.effectAllowed = 'move';
+        tr.classList.add('dragging'); document.body.classList.add('dnd');
+    });
+    document.addEventListener('dragend', () => {
+        $$('.dragging').forEach(x => x.classList.remove('dragging')); document.body.classList.remove('dnd'); clearDrop();
+    });
+    document.addEventListener('dragover', e => {
+        const c = e.target.closest && e.target.closest('.cal-cell'); if (!c) return;
+        e.preventDefault(); if (!c.classList.contains('drop-hover')) { clearDrop(); c.classList.add('drop-hover'); }
+    });
+    document.addEventListener('drop', e => {
+        const c = e.target.closest && e.target.closest('.cal-cell'); if (!c) return;
+        e.preventDefault(); clearDrop();
+        const id = +e.dataTransfer.getData('text/plain'), a = S.acts.find(x => x.id === id);
+        if (!a || a.date === c.dataset.date) return;
+        const old = a.date; a.date = S.sel = c.dataset.date;
+        S.fx = { id, cls: 'row-flash' }; save(); renderAll();
+        toast(`📅 Dipindah ke ${fmt(a.date)}`, { action: 'Urungkan', ms: 5000, fn: () => { a.date = old; save(); renderAll(); } });
     });
 });
