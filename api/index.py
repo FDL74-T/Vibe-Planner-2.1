@@ -175,8 +175,7 @@ class handler(BaseHTTPRequestHandler):
         self.send_json(build_payload(year, month))
 
     def log_message(self, fmt, *args):
-        pass  # log akses dimatikan agar terminal tetap bersih
-
+        pass  
 
 if __name__ == "__main__":
     httpd = HTTPServer(("0.0.0.0", PORT), handler)
